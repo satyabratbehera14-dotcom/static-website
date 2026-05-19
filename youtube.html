@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>YT Downloader</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --red: #E02020;
+      --red-dark: #B01818;
+      --red-glow: #FF4040;
+      --bg: #0C0C0E;
+      --surface: #141416;
+      --surface2: #1C1C20;
+      --border: rgba(255,255,255,0.08);
+      --border2: rgba(255,255,255,0.14);
+      --text: #F0EDE8;
+      --muted: #888;
+      --muted2: #555;
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'Space Grotesk', sans-serif;
+    }
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    /* Grid noise bg */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: repeating-linear-gradient(rgba(255,255,255,.015) 0 1px, transparent 1px 40px),
+                        repeating-linear-gradient(90deg, rgba(255,255,255,.015) 0 1px, transparent 1px 40px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 60px 24px 80px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 52px;
+    }
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .logo-icon {
+      width: 42px; height: 42px;
+      background: var(--red);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 24px rgba(224,32,32,0.5);
+    }
+    .logo-icon svg { width: 22px; height: 22px; fill: white; }
+    .logo-text {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .logo-text span { color: var(--red); }
+    .tagline {
+      font-size: 13px;
+      color: var(--muted);
+      font-family: var(--mono);
+      letter-spacing: 0.05em;
+    }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 11px;
+      font-family: var(--mono);
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    /* URL Input */
+    .url-row {
+      display: flex;
+      gap: 10px;
+    }
+    .url-input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 12px 16px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .url-input::placeholder { color: var(--muted2); }
+    .url-input:focus { border-color: var(--red); }
+    .fetch-btn {
+      background: var(--red);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 22px;
+      cursor: pointer;
+      transition: background .2s, transform .1s, box-shadow .2s;
+      white-space: nowrap;
+    }
+    .fetch-btn:hover { background: var(--red-dark); box-shadow: 0 0 18px rgba(224,32,32,.4); }
+    .fetch-btn:active { transform: scale(0.97); }
+    .fetch-btn:disabled { background: var(--muted2); cursor: not-allowed; box-shadow: none; }
+
+    /* Options row */
+    .options-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .seg-group {
+      display: flex;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      flex: 1;
+      min-width: 180px;
+    }
+    .seg-group label {
+      flex: 1;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 10px 12px;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all .18s;
+      user-select: none;
+    }
+    .seg-group input[type="radio"] { display: none; }
+    .seg-group input[type="radio"]:checked + label {
+      background: var(--surface);
+      color: var(--text);
+      border-bottom: 2px solid var(--red);
+    }
+
+    /* Thumbnail preview */
+    .preview {
+      display: none;
+      gap: 18px;
+      align-items: flex-start;
+    }
+    .preview.visible { display: flex; }
+    .thumb-wrap {
+      width: 140px;
+      min-width: 140px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      position: relative;
+    }
+    .thumb-wrap img { width: 100%; display: block; }
+    .duration-badge {
+      position: absolute;
+      bottom: 6px; right: 6px;
+      background: rgba(0,0,0,.85);
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 2px 6px;
+      color: #fff;
+    }
+    .meta { flex: 1; }
+    .meta-title {
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.4;
+      margin-bottom: 6px;
+    }
+    .meta-author {
+      font-size: 12px;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+    .meta-badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .badge {
+      font-size: 11px;
+      font-family: var(--mono);
+      padding: 3px 9px;
+      border-radius: 5px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--muted);
+    }
+    .badge.red { border-color: rgba(224,32,32,.4); color: var(--red-glow); background: rgba(224,32,32,.08); }
+
+    /* Download button */
+    .dl-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--red);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-family: var(--sans);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      letter-spacing: -0.2px;
+    }
+    .dl-btn:hover:not(:disabled) { background: var(--red-dark); box-shadow: 0 0 28px rgba(224,32,32,.4); }
+    .dl-btn:active:not(:disabled) { transform: scale(0.99); }
+    .dl-btn:disabled { background: var(--muted2); cursor: not-allowed; box-shadow: none; }
+    .dl-btn svg { width: 18px; height: 18px; fill: white; }
+
+    /* Progress */
+    .progress-wrap { display: none; }
+    .progress-wrap.visible { display: block; }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .progress-bar {
+      height: 4px;
+      background: var(--surface2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--red);
+      border-radius: 99px;
+      width: 0%;
+      transition: width .3s ease;
+      box-shadow: 0 0 10px rgba(224,32,32,.6);
+    }
+
+    /* Status message */
+    .status {
+      font-size: 13px;
+      font-family: var(--mono);
+      color: var(--muted);
+      text-align: center;
+      min-height: 20px;
+      margin-top: 12px;
+    }
+    .status.error { color: #FF6060; }
+    .status.success { color: #48E08A; }
+
+    /* Code section */
+    .code-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 0;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0;
+    }
+    .code-tab {
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--muted);
+      padding: 8px 14px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all .15s;
+    }
+    .code-tab.active { color: var(--red-glow); border-bottom-color: var(--red); }
+    .code-panel { display: none; margin-top: 16px; }
+    .code-panel.active { display: block; }
+    pre {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.7;
+      color: #C8C0B8;
+    }
+    .kw { color: #C792EA; }
+    .str { color: #C3E88D; }
+    .cm { color: #546E7A; font-style: italic; }
+    .fn { color: #82AAFF; }
+    .tp { color: #FFCB6B; }
+    .num { color: #F78C6C; }
+
+    /* How-to steps */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .step {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    .step-num {
+      width: 28px; min-width: 28px; height: 28px;
+      background: var(--red);
+      border-radius: 7px;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+    }
+    .step-text {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+      padding-top: 4px;
+    }
+    .step-text strong { color: var(--text); font-weight: 600; }
+    .step-text code {
+      font-family: var(--mono);
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 11px;
+      color: var(--red-glow);
+    }
+
+    hr.divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 8px 0 20px;
+    }
+  </style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M23 7s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C16.1 2.8 12 2.8 12 2.8s-4.1 0-6.8.1c-.6.1-1.9.1-3 1.3C1.3 5 1 7 1 7S.7 9.2.7 11.3v2c0 2.1.3 4.3.3 4.3s.3 2 1.2 2.8c1.1 1.2 2.6 1.1 3.2 1.2C7.3 21.8 12 21.8 12 21.8s4.1 0 6.8-.2c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.8 1.2-2.8s.3-2.2.3-4.3v-2C23.3 9.2 23 7 23 7zm-13.4 8.7V8.3l8.1 4.2-8.1 3.2z"/></svg>
+      </div>
+      <div class="logo-text">YT<span>Down</span></div>
+    </div>
+    <div class="tagline">// video &amp; audio downloader — powered by .NET + yt-dlp</div>
+  </div>
+
+  <!-- URL Card -->
+  <div class="card">
+    <div class="card-title">Paste YouTube URL</div>
+    <div class="url-row">
+      <input class="url-input" id="url-input" type="text" placeholder="https://youtube.com/watch?v=..."/>
+      <button class="fetch-btn" id="fetch-btn" onclick="fetchInfo()">Fetch ↗</button>
+    </div>
+  </div>
+
+  <!-- Format & Quality -->
+  <div class="card">
+    <div class="card-title">Format &amp; Quality</div>
+    <div class="options-row">
+      <div class="seg-group">
+        <input type="radio" name="fmt" id="fmt-mp4" value="mp4" checked/>
+        <label for="fmt-mp4">📹 MP4 Video</label>
+        <input type="radio" name="fmt" id="fmt-mp3" value="mp3"/>
+        <label for="fmt-mp3">🎵 MP3 Audio</label>
+      </div>
+      <div class="seg-group" id="quality-group">
+        <input type="radio" name="qual" id="q-best" value="best" checked/>
+        <label for="q-best">Best</label>
+        <input type="radio" name="qual" id="q-1080" value="1080p"/>
+        <label for="q-1080">1080p</label>
+        <input type="radio" name="qual" id="q-720" value="720p"/>
+        <label for="q-720">720p</label>
+        <input type="radio" name="qual" id="q-480" value="480p"/>
+        <label for="q-480">480p</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview Card -->
+  <div class="card" id="preview-card" style="display:none">
+    <div class="card-title">Video Info</div>
+    <div class="preview visible" id="preview">
+      <div class="thumb-wrap">
+        <img id="thumb" src="" alt="thumbnail"/>
+        <span class="duration-badge" id="duration-badge">0:00</span>
+      </div>
+      <div class="meta">
+        <div class="meta-title" id="meta-title">—</div>
+        <div class="meta-author" id="meta-author">—</div>
+        <div class="meta-badges">
+          <span class="badge red" id="badge-fmt">MP4</span>
+          <span class="badge" id="badge-qual">Best Quality</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Download -->
+  <div class="card">
+    <button class="dl-btn" id="dl-btn" onclick="startDownload()">
+      <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5v-2z"/></svg>
+      Download
+    </button>
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-label"><span id="prog-label">Downloading…</span><span id="prog-pct">0%</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+    </div>
+    <div class="status" id="status-msg"></div>
+  </div>
+
+  <!-- How it works -->
+  <div class="card">
+    <div class="card-title">How it works</div>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Paste URL</strong> — any youtube.com/watch or youtu.be link</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Choose format</strong> — MP4 for video, MP3 for audio-only</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Fetch metadata</strong> — hit <strong>Fetch ↗</strong> to preview title, thumbnail &amp; duration</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Download</strong> — the .NET API calls <code>yt-dlp</code>, merges audio+video, and streams the file back</div></div>
+    </div>
+  </div>
+
+  <!-- Code Section -->
+  <div class="card">
+    <div class="card-title">Source Code</div>
+    <div class="code-tabs">
+      <div class="code-tab active" onclick="showTab('backend')">Program.cs</div>
+      <div class="code-tab" onclick="showTab('service')">Service</div>
+      <div class="code-tab" onclick="showTab('install')">Setup</div>
+    </div>
+
+    <div class="code-panel active" id="tab-backend">
+      <pre><span class="cm">// ASP.NET Core 8 Minimal API — Program.cs</span>
+<span class="kw">var</span> builder = WebApplication.<span class="fn">CreateBuilder</span>(args);
+builder.Services.<span class="fn">AddCors</span>(opt => opt.<span class="fn">AddPolicy</span>(<span class="str">"AllowAll"</span>,
+    p => p.<span class="fn">AllowAnyOrigin</span>().<span class="fn">AllowAnyMethod</span>().<span class="fn">AllowAnyHeader</span>()));
+builder.Services.<span class="fn">AddSingleton</span>&lt;<span class="tp">YoutubeDownloadService</span>&gt;();
+
+<span class="kw">var</span> app = builder.<span class="fn">Build</span>();
+app.<span class="fn">UseCors</span>(<span class="str">"AllowAll"</span>);
+
+<span class="cm">// GET /api/info?url=...</span>
+app.<span class="fn">MapGet</span>(<span class="str">"/api/info"</span>, <span class="kw">async</span> (
+    <span class="tp">string</span> url, <span class="tp">YoutubeDownloadService</span> svc) => {
+    <span class="kw">var</span> info = <span class="kw">await</span> svc.<span class="fn">GetVideoInfoAsync</span>(url);
+    <span class="kw">return</span> info <span class="kw">is null</span>
+        ? Results.<span class="fn">BadRequest</span>(<span class="str">"Could not fetch video info"</span>)
+        : Results.<span class="fn">Ok</span>(info);
+});
+
+<span class="cm">// POST /api/download</span>
+app.<span class="fn">MapPost</span>(<span class="str">"/api/download"</span>, <span class="kw">async</span> (
+    <span class="tp">HttpContext</span> ctx, <span class="tp">YoutubeDownloadService</span> svc) => {
+    <span class="kw">var</span> req = <span class="kw">await</span> JsonSerializer
+        .<span class="fn">DeserializeAsync</span>&lt;<span class="tp">DownloadRequest</span>&gt;(ctx.Request.Body);
+    <span class="kw">if</span> (req <span class="kw">is null</span>) <span class="kw">return</span> Results.<span class="fn">BadRequest</span>();
+    <span class="kw">var</span> path = <span class="kw">await</span> svc.<span class="fn">DownloadAsync</span>(req);
+    <span class="kw">if</span> (path <span class="kw">is null</span>) <span class="kw">return</span> Results.<span class="fn">Problem</span>(<span class="str">"Download failed"</span>);
+    <span class="kw">var</span> mime = req.Format == <span class="str">"mp3"</span> ? <span class="str">"audio/mpeg"</span> : <span class="str">"video/mp4"</span>;
+    <span class="kw">return</span> Results.<span class="fn">File</span>(path, mime, Path.<span class="fn">GetFileName</span>(path));
+});
+app.<span class="fn">Run</span>();</pre>
+    </div>
+
+    <div class="code-panel" id="tab-service">
+      <pre><span class="kw">public class</span> <span class="tp">YoutubeDownloadService</span> {
+  <span class="kw">private const string</span> YtDlp = <span class="str">"yt-dlp"</span>;
+  <span class="kw">private readonly string</span> _outputDir;
+
+  <span class="kw">public</span> <span class="fn">YoutubeDownloadService</span>() {
+    _outputDir = Path.<span class="fn">Combine</span>(
+        Path.<span class="fn">GetTempPath</span>(), <span class="str">"yt-downloads"</span>);
+    Directory.<span class="fn">CreateDirectory</span>(_outputDir);
+  }
+
+  <span class="kw">public async</span> <span class="tp">Task</span>&lt;<span class="tp">VideoInfo</span>?&gt; <span class="fn">GetVideoInfoAsync</span>(<span class="tp">string</span> url) {
+    <span class="kw">var</span> args = <span class="str">$"--dump-single-json --no-playlist \"{url}\""</span>;
+    <span class="kw">var</span> json = <span class="kw">await</span> <span class="fn">RunProcessAsync</span>(YtDlp, args);
+    <span class="kw">if</span> (json <span class="kw">is null</span>) <span class="kw">return null</span>;
+    <span class="kw">using var</span> doc = JsonDocument.<span class="fn">Parse</span>(json);
+    <span class="kw">var</span> r = doc.RootElement;
+    <span class="kw">return new</span> <span class="tp">VideoInfo</span> {
+        Title    = r.<span class="fn">GetProperty</span>(<span class="str">"title"</span>).<span class="fn">GetString</span>() ?? <span class="str">""</span>,
+        Author   = r.<span class="fn">GetProperty</span>(<span class="str">"uploader"</span>).<span class="fn">GetString</span>() ?? <span class="str">""</span>,
+        Duration = <span class="fn">FormatDuration</span>(
+                     r.<span class="fn">GetProperty</span>(<span class="str">"duration"</span>).<span class="fn">GetInt32</span>()),
+        Thumbnail= r.<span class="fn">GetProperty</span>(<span class="str">"thumbnail"</span>).<span class="fn">GetString</span>() ?? <span class="str">""</span>,
+    };
+  }
+
+  <span class="kw">public async</span> <span class="tp">Task</span>&lt;<span class="tp">string</span>?&gt; <span class="fn">DownloadAsync</span>(<span class="tp">DownloadRequest</span> req) {
+    <span class="kw">var</span> id  = Guid.<span class="fn">NewGuid</span>().<span class="fn">ToString</span>();
+    <span class="kw">var</span> tpl = Path.<span class="fn">Combine</span>(_outputDir, <span class="str">$"{id}.%(ext)s"</span>);
+    <span class="kw">string</span> args;
+    <span class="kw">if</span> (req.Format == <span class="str">"mp3"</span>)
+        args = <span class="str">$"-x --audio-format mp3 -o \"{tpl}\" \"{req.Url}\""</span>;
+    <span class="kw">else</span> {
+        <span class="kw">var</span> q = req.Quality <span class="kw">switch</span> {
+            <span class="str">"1080p"</span> => <span class="str">"bestvideo[height&lt;=1080]+bestaudio"</span>,
+            <span class="str">"720p"</span>  => <span class="str">"bestvideo[height&lt;=720]+bestaudio"</span>,
+            <span class="str">"480p"</span>  => <span class="str">"bestvideo[height&lt;=480]+bestaudio"</span>,
+            _       => <span class="str">"bestvideo+bestaudio"</span>
+        };
+        args = <span class="str">$"-f \"{q}\" --merge-output-format mp4 -o \"{tpl}\" \"{req.Url}\""</span>;
+    }
+    <span class="kw">await</span> <span class="fn">RunProcessAsync</span>(YtDlp, args);
+    <span class="kw">var</span> ext  = req.Format == <span class="str">"mp3"</span> ? <span class="str">"mp3"</span> : <span class="str">"mp4"</span>;
+    <span class="kw">var</span> file = Path.<span class="fn">Combine</span>(_outputDir, <span class="str">$"{id}.{ext}"</span>);
+    <span class="kw">return</span> File.<span class="fn">Exists</span>(file) ? file : <span class="kw">null</span>;
+  }
+}</pre>
+    </div>
+
+    <div class="code-panel" id="tab-install">
+      <pre><span class="cm"># 1. Install .NET 8 SDK</span>
+<span class="cm">#    https://dotnet.microsoft.com/download</span>
+
+<span class="cm"># 2. Install yt-dlp (required backend dependency)</span>
+<span class="cm">#    Windows</span>
+winget install yt-dlp
+
+<span class="cm">#    macOS</span>
+brew install yt-dlp
+
+<span class="cm">#    Linux</span>
+sudo curl -L https://github.com/yt-dlp/yt-dlp/releases/latest\
+  /download/yt-dlp -o /usr/local/bin/yt-dlp
+sudo chmod a+rx /usr/local/bin/yt-dlp
+
+<span class="cm"># 3. Install ffmpeg (for audio extraction &amp; muxing)</span>
+<span class="cm">#    Windows: winget install Gyan.FFmpeg</span>
+<span class="cm">#    macOS:   brew install ffmpeg</span>
+<span class="cm">#    Linux:   sudo apt install ffmpeg</span>
+
+<span class="cm"># 4. Create &amp; run the API</span>
+dotnet new web -n YouTubeDownloader.Api
+<span class="cm"># Copy Program.cs into the project</span>
+cd YouTubeDownloader.Api
+dotnet run
+
+<span class="cm"># API listens on http://localhost:5000</span>
+<span class="cm"># GET  /api/info?url=&lt;youtube-url&gt;</span>
+<span class="cm"># POST /api/download  { url, format, quality }</span></pre>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API = 'http://localhost:5000';
+let videoMeta = null;
+
+function showTab(name) {
+  document.querySelectorAll('.code-tab').forEach((t,i) => {
+    const ids = ['backend','service','install'];
+    t.classList.toggle('active', ids[i] === name);
+  });
+  document.querySelectorAll('.code-panel').forEach(p => {
+    p.classList.toggle('active', p.id === 'tab-' + name);
+  });
+}
+
+document.querySelectorAll('input[name="fmt"]').forEach(r => {
+  r.addEventListener('change', () => {
+    const isMp3 = r.value === 'mp3';
+    document.getElementById('quality-group').style.opacity = isMp3 ? '.35' : '1';
+    document.getElementById('quality-group').style.pointerEvents = isMp3 ? 'none' : 'auto';
+    updateBadges();
+  });
+});
+
+document.querySelectorAll('input[name="qual"]').forEach(r =>
+  r.addEventListener('change', updateBadges));
+
+function updateBadges() {
+  const fmt = document.querySelector('input[name="fmt"]:checked').value.toUpperCase();
+  const qual = document.querySelector('input[name="qual"]:checked').value;
+  document.getElementById('badge-fmt').textContent = fmt;
+  document.getElementById('badge-qual').textContent = qual === 'best' ? 'Best Quality' : qual;
+}
+
+async function fetchInfo() {
+  const url = document.getElementById('url-input').value.trim();
+  if (!url) { setStatus('Please paste a YouTube URL', 'error'); return; }
+  const btn = document.getElementById('fetch-btn');
+  btn.disabled = true;
+  btn.textContent = 'Fetching…';
+  setStatus('Fetching video info…', '');
+
+  // Demo mode (no real backend)
+  await new Promise(r => setTimeout(r, 900));
+  videoMeta = {
+    title: 'Lofi Hip Hop Radio — Beats to Relax/Study to 🎵',
+    author: 'Lofi Girl',
+    duration: '1:24:00',
+    thumbnail: 'https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg'
+  };
+
+  document.getElementById('thumb').src = videoMeta.thumbnail;
+  document.getElementById('duration-badge').textContent = videoMeta.duration;
+  document.getElementById('meta-title').textContent = videoMeta.title;
+  document.getElementById('meta-author').textContent = '@ ' + videoMeta.author;
+  document.getElementById('preview-card').style.display = 'block';
+  updateBadges();
+  setStatus('Ready to download ✓', 'success');
+  btn.disabled = false;
+  btn.textContent = 'Fetch ↗';
+}
+
+async function startDownload() {
+  const url = document.getElementById('url-input').value.trim();
+  if (!url) { setStatus('Please paste a YouTube URL first', 'error'); return; }
+  const fmt  = document.querySelector('input[name="fmt"]:checked').value;
+  const qual = document.querySelector('input[name="qual"]:checked').value;
+
+  const btn = document.getElementById('dl-btn');
+  btn.disabled = true;
+  showProgress(true);
+  setProgress(0, 'Connecting to API…');
+  setStatus('');
+
+  // Simulate progress (real: stream download from /api/download)
+  let pct = 0;
+  const msgs = ['Fetching stream…','Downloading…','Merging audio + video…','Finalising…'];
+  const iv = setInterval(() => {
+    pct = Math.min(pct + Math.random() * 18, 95);
+    const idx = Math.floor(pct / 25);
+    setProgress(Math.round(pct), msgs[Math.min(idx, msgs.length-1)]);
+  }, 400);
+
+  try {
+    /* Real call — uncomment when backend is running:
+    const res = await fetch(`${API}/api/download`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, format: fmt, quality: qual })
+    });
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `video.${fmt}`;
+    a.click();
+    */
+    await new Promise(r => setTimeout(r, 2800));
+    clearInterval(iv);
+    setProgress(100, 'Complete!');
+    setStatus(`✓ ${fmt.toUpperCase()} downloaded successfully`, 'success');
+  } catch(e) {
+    clearInterval(iv);
+    setStatus('Error: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    setTimeout(() => showProgress(false), 1500);
+  }
+}
+
+function setStatus(msg, type) {
+  const el = document.getElementById('status-msg');
+  el.textContent = msg;
+  el.className = 'status ' + (type || '');
+}
+function showProgress(show) {
+  document.getElementById('progress-wrap').classList.toggle('visible', show);
+}
+function setProgress(pct, label) {
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-pct').textContent = pct + '%';
+  document.getElementById('prog-label').textContent = label;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: #eef2ff;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            height: 100vh;
+            background: #fff;
+            padding: 15px 10px;
+            width: 230px;
+            min-width: 230px;
+            transition: all 0.3s ease;
+            overflow: visible;
+            position: relative;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .sidebar.collapsed {
+            width: 60px;
+            min-width: 60px;
+            padding: 15px 8px;
+        }
+
+        /* Brand title */
+        .sidebar-brand {
+            font-size: 19px;
+            font-weight: 700;
+            color: #5f0aff;
+            padding: 6px 4px 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            transition: opacity 0.2s ease;
+        }
+
+        .sidebar.collapsed .sidebar-brand {
+            opacity: 0;
+            pointer-events: none;
+            height: 0;
+            padding: 0;
+        }
+
+        /* Nav items */
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-link-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 10px;
+            margin: 3px 0;
+            text-decoration: none;
+            color: #333;
+            border-radius: 8px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: background 0.2s ease, color 0.2s ease;
+            font-size: 14px;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-link-btn:hover {
+            background: #5f0aff18;
+            color: #5f0aff;
+        }
+
+        .nav-link-btn.active {
+            background: #5f0aff;
+            color: white;
+        }
+
+        .nav-link-btn i {
+            font-size: 18px;
+            flex-shrink: 0;
+            width: 22px;
+            text-align: center;
+        }
+
+        .nav-label {
+            transition: opacity 0.2s ease, width 0.3s ease;
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed .nav-label {
+            opacity: 0;
+            width: 0;
+        }
+
+        .chevron {
+            margin-left: auto;
+            font-size: 12px;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .sidebar.collapsed .chevron {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .chevron.open {
+            transform: rotate(90deg);
+        }
+
+        /* Inline submenu (expanded sidebar) */
+        .submenu {
+            padding-left: 32px;
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.3s ease;
+        }
+
+        .submenu.open {
+            max-height: 200px;
+        }
+
+        .sidebar.collapsed .submenu {
+            display: none;
+        }
+
+        .submenu a {
+            display: block;
+            font-size: 13px;
+            padding: 6px 8px;
+            color: #555;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: background 0.2s ease, color 0.2s ease, padding-left 0.2s ease;
+        }
+
+        .submenu a:hover {
+            background: #5f0aff18;
+            color: #5f0aff;
+            padding-left: 14px;
+        }
+
+        /* Floating submenu (collapsed sidebar) */
+        .float-submenu {
+            display: none;
+            position: fixed;
+            left: 64px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(95,10,255,0.15);
+            padding: 8px 0;
+            min-width: 160px;
+            z-index: 9999;
+            border: 1px solid #ebe6ff;
+        }
+
+        .float-submenu.show {
+            display: block;
+        }
+
+        .float-submenu-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #5f0aff;
+            padding: 4px 14px 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .float-submenu a {
+            display: block;
+            font-size: 13px;
+            padding: 8px 14px;
+            color: #333;
+            text-decoration: none;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .float-submenu a:hover {
+            background: #5f0aff12;
+            color: #5f0aff;
+        }
+
+        /* Tooltip label for icon-only items (no submenu) */
+        .icon-tooltip {
+            display: none;
+            position: fixed;
+            left: 64px;
+            background: #5f0aff;
+            color: #fff;
+            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            z-index: 9999;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            transition: all 0.3s ease;
+        }
+
+        /* Topbar */
+        .topbar {
+            background: #eef2ff;
+            padding: 10px 16px;
+        }
+
+        .topbar-icon {
+            cursor: pointer;
+            transition: transform 0.25s ease;
+        }
+
+        .topbar-icon:hover {
+            transform: translateY(-3px);
+        }
+
+        .profile-img {
+            cursor: pointer;
+            transition: transform 0.25s ease;
+        }
+
+        .profile-img:hover {
+            transform: translateY(-3px);
+        }
+
+        .form-control:focus {
+            border-color: #5f0aff;
+            box-shadow: 0 0 0 3px #5f0aff33;
+        }
+
+        .btn-light {
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .btn-light:hover {
+            background: #e0d9ff;
+            transform: scale(1.05);
+        }
+
+        /* Cards */
+        .card-box {
+            background: linear-gradient(45deg, #5f0aff, #8e2de2);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card-box:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 10px 24px #5f0aff44;
+        }
+
+        /* Table */
+        .table-box {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .table-box:hover {
+            box-shadow: 0 6px 20px rgba(95, 10, 255, 0.1);
+        }
+
+        .table tbody tr {
+            transition: background 0.2s ease;
+        }
+
+        .table tbody tr:hover {
+            background: #f0ecff;
+        }
+
+        /* Footer */
+        .footer {
+            background: linear-gradient(45deg, #5f0aff, #8e2de2);
+            color: white;
+            text-align: center;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+
+        /* Page animation */
+        .page {
+            animation: fade 0.35s ease;
+        }
+
+        @keyframes fade {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .outer-row {
+            display: flex;
+            flex-direction: row;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container-fluid p-0">
+    <div class="outer-row">
+
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-brand">SATYA'S DASHBOARD</div>
+
+            <!-- Dashboard -->
+            <div class="nav-item">
+                <button class="nav-link-btn" onclick="handleNavClick(event, 'dashMenu', 'dashboard')">
+                    <i class="bi bi-house"></i>
+                    <span class="nav-label">Dashboard</span>
+                    <i class="bi bi-chevron-right chevron" id="chevron-dashMenu"></i>
+                </button>
+                <div class="submenu" id="dashMenu">
+                    <a href="#" onclick="showPage('dashboard', this)">Overview</a>
+                    <a href="#" onclick="showPage('dashboard', this)">Stats</a>
+                </div>
+                <div class="float-submenu" id="float-dashMenu">
+                    <div class="float-submenu-title">Dashboard</div>
+                    <a href="#" onclick="showPage('dashboard', this); closeFloatMenus()">Overview</a>
+                    <a href="#" onclick="showPage('dashboard', this); closeFloatMenus()">Stats</a>
+                </div>
+            </div>
+
+            <!-- Articles -->
+            <div class="nav-item">
+                <button class="nav-link-btn" onclick="handleNavClick(event, 'articleMenu', 'articles')">
+                    <i class="bi bi-file-text"></i>
+                    <span class="nav-label">Articles</span>
+                    <i class="bi bi-chevron-right chevron" id="chevron-articleMenu"></i>
+                </button>
+                <div class="submenu" id="articleMenu">
+                    <a href="#" onclick="showPage('articles', this)">All Articles</a>
+                    <a href="#" onclick="showPage('articles', this)">Add Article</a>
+                </div>
+                <div class="float-submenu" id="float-articleMenu">
+                    <div class="float-submenu-title">Articles</div>
+                    <a href="#" onclick="showPage('articles', this); closeFloatMenus()">All Articles</a>
+                    <a href="#" onclick="showPage('articles', this); closeFloatMenus()">Add Article</a>
+                </div>
+            </div>
+
+            <!-- Graphs -->
+            <div class="nav-item">
+                <button class="nav-link-btn" onclick="handleNavClick(event, 'graphMenu', 'graphs')">
+                    <i class="bi bi-bar-chart"></i>
+                    <span class="nav-label">Graphs</span>
+                    <i class="bi bi-chevron-right chevron" id="chevron-graphMenu"></i>
+                </button>
+                <div class="submenu" id="graphMenu">
+                    <a href="#" onclick="showPage('graphs', this)">Bar Graph</a>
+                    <a href="#" onclick="showPage('graphs', this)">Pie Chart</a>
+                </div>
+                <div class="float-submenu" id="float-graphMenu">
+                    <div class="float-submenu-title">Graphs</div>
+                    <a href="#" onclick="showPage('graphs', this); closeFloatMenus()">Bar Graph</a>
+                    <a href="#" onclick="showPage('graphs', this); closeFloatMenus()">Pie Chart</a>
+                </div>
+            </div>
+
+            <!-- Services -->
+            <div class="nav-item">
+                <button class="nav-link-btn" onclick="handleNavClick(event, 'serviceMenu', 'services')">
+                    <i class="bi bi-building"></i>
+                    <span class="nav-label">Services</span>
+                    <i class="bi bi-chevron-right chevron" id="chevron-serviceMenu"></i>
+                </button>
+                <div class="submenu" id="serviceMenu">
+                    <a href="#" onclick="showPage('services', this)">Car Loan</a>
+                    <a href="#" onclick="showPage('services', this)">Bike Loan</a>
+                </div>
+                <div class="float-submenu" id="float-serviceMenu">
+                    <div class="float-submenu-title">Services</div>
+                    <a href="#" onclick="showPage('services', this); closeFloatMenus()">Car Loan</a>
+                    <a href="#" onclick="showPage('services', this); closeFloatMenus()">Bike Loan</a>
+                </div>
+            </div>
+
+            <!-- Profile -->
+            <div class="nav-item">
+                <button class="nav-link-btn" onclick="handleNavClick(event, 'profileMenu', 'profile')">
+                    <i class="bi bi-person"></i>
+                    <span class="nav-label">Profile</span>
+                    <i class="bi bi-chevron-right chevron" id="chevron-profileMenu"></i>
+                </button>
+                <div class="submenu" id="profileMenu">
+                    <a href="#" onclick="showPage('profile', this)">View Profile</a>
+                    <a href="#" onclick="showPage('profile', this)">Edit Profile</a>
+                </div>
+                <div class="float-submenu" id="float-profileMenu">
+                    <div class="float-submenu-title">Profile</div>
+                    <a href="#" onclick="showPage('profile', this); closeFloatMenus()">View Profile</a>
+                    <a href="#" onclick="showPage('profile', this); closeFloatMenus()">Edit Profile</a>
+                </div>
+            </div>
+
+            <!-- Settings (no submenu) -->
+            <div class="nav-item">
+                <button class="nav-link-btn" id="settings-btn" onclick="showPage('settings', this)">
+                    <i class="bi bi-gear"></i>
+                    <span class="nav-label">Settings</span>
+                </button>
+                <div class="float-submenu" id="float-settingsMenu">
+                    <div class="float-submenu-title">Settings</div>
+                    <a href="#" onclick="showPage('settings', this); closeFloatMenus()">Open Settings</a>
+                </div>
+            </div>
+
+            <!-- Logout -->
+            <div class="nav-item">
+                <a href="LOGINWEBPAGE.html" class="nav-link-btn">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span class="nav-label">Logout</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+
+            <!-- Topbar -->
+            <div class="d-flex justify-content-between align-items-center topbar">
+                <button class="btn btn-light" onclick="toggleSidebar()">
+                    <i class="bi bi-list"></i>
+                </button>
+                <input type="text" id="search" class="form-control w-50" placeholder="Search">
+                <div class="d-flex align-items-center gap-4">
+                    <i class="bi bi-bell fs-5 topbar-icon"></i>
+                    <i class="bi bi-envelope fs-5 topbar-icon"></i>
+                    <img src="satyaimage.jpeg" width="36" height="36" class="rounded-circle profile-img" onerror="this.style.display='none'">
+                </div>
+            </div>
+
+            <!-- Dynamic Content -->
+            <div class="p-3">
+
+                <!-- Dashboard -->
+                <div id="dashboard" class="page">
+                    <div class="row p-3 g-3">
+                        <div class="col-md-3">
+                            <div class="card-box d-flex justify-content-between align-items-center">
+                                <div><h4>100k</h4><small>Article Views</small></div>
+                                <i class="bi bi-eye fs-3"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card-box d-flex justify-content-between align-items-center">
+                                <div><h4>160</h4><small>Likes</small></div>
+                                <i class="bi bi-hand-thumbs-up fs-3"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card-box d-flex justify-content-between align-items-center">
+                                <div><h4>220</h4><small>Comments</small></div>
+                                <i class="bi bi-chat-dots fs-3"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card-box d-flex justify-content-between align-items-center">
+                                <div><h4>80</h4><small>Published</small></div>
+                                <i class="bi bi-check-circle fs-3"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-box m-3">
+                        <div class="d-flex justify-content-between">
+                            <h5 class="text-primary">Recent Articles</h5>
+                            <button class="btn btn-primary btn-sm">View All</button>
+                        </div>
+                        <table class="table mt-3" id="tableData">
+                            <thead>
+                                <tr>
+                                    <th>Article</th><th>Views</th><th>Comments</th><th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Article 73</td><td>2.9k</td><td>210</td><td><span class="badge bg-success">Published</span></td></tr>
+                                <tr><td>Article 72</td><td>1.5k</td><td>360</td><td><span class="badge bg-success">Published</span></td></tr>
+                                <tr><td>Article 71</td><td>1.1k</td><td>150</td><td><span class="badge bg-success">Published</span></td></tr>
+                                <tr><td>Article 70</td><td>1.2k</td><td>420</td><td><span class="badge bg-success">Published</span></td></tr>
+                                <tr><td>Article 69</td><td>2.6k</td><td>190</td><td><span class="badge bg-success">Published</span></td></tr>
+                                <tr><td>Article 74</td><td>3.1k</td><td>300</td><td><span class="badge bg-success">Published</span></td></tr>
+                                <tr><td>Article 75</td><td>3.2k</td><td>400</td><td><span class="badge bg-success">Published</span></td></tr>
+                                <tr><td>Article 76</td><td>3.3k</td><td>500</td><td><span class="badge bg-success">Published</span></td></tr>
+                                <tr><td>Article 77</td><td>3.4k</td><td>600</td><td><span class="badge bg-success">Published</span></td></tr>
+                                <tr><td>Article 78</td><td>3.5k</td><td>190</td><td><span class="badge bg-success">Published</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Articles -->
+                <div id="articles" class="page" style="display:none;">
+                    <h2>Articles</h2>
+                </div>
+
+                <!-- Graphs -->
+                <div id="graphs" class="page" style="display:none;">
+                    <h2>Graphs</h2>
+                </div>
+
+                <!-- Services -->
+                <div id="services" class="page" style="display:none;">
+                    <h2>Services</h2>
+                </div>
+
+                <!-- Profile -->
+                <div id="profile" class="page" style="display:none;">
+                    <h2>Profile</h2>
+                </div>
+
+                <!-- Settings -->
+                <div id="settings" class="page" style="display:none;">
+                    <h2>Settings</h2>
+                </div>
+
+                <div class="footer">ADMIN PANEL</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let isCollapsed = false;
+    let activeFloatMenu = null;
+    const menuIds = ['dashMenu', 'articleMenu', 'graphMenu', 'serviceMenu', 'profileMenu'];
+
+    function toggleSidebar() {
+        isCollapsed = !isCollapsed;
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('collapsed', isCollapsed);
+
+        // Close all inline submenus when collapsing
+        if (isCollapsed) {
+            menuIds.forEach(id => {
+                document.getElementById(id).classList.remove('open');
+                const chevron = document.getElementById('chevron-' + id);
+                if (chevron) chevron.classList.remove('open');
+            });
+            closeFloatMenus();
+        }
+    }
+
+    function handleNavClick(event, menuId, pageId) {
+        if (isCollapsed) {
+            // Show floating submenu
+            event.stopPropagation();
+            const btn = event.currentTarget;
+            const rect = btn.getBoundingClientRect();
+
+            // Close any open float menu
+            if (activeFloatMenu && activeFloatMenu !== menuId) {
+                closeFloatMenus();
+            }
+
+            const floatMenu = document.getElementById('float-' + menuId);
+            if (floatMenu.classList.contains('show')) {
+                closeFloatMenus();
+                return;
+            }
+
+            floatMenu.style.top = rect.top + 'px';
+            floatMenu.classList.add('show');
+            activeFloatMenu = menuId;
+        } else {
+            // Toggle inline submenu
+            closeFloatMenus();
+            const submenu = document.getElementById(menuId);
+            const chevron = document.getElementById('chevron-' + menuId);
+            const isOpen = submenu.classList.contains('open');
+
+            // Close all
+            menuIds.forEach(id => {
+                document.getElementById(id).classList.remove('open');
+                const c = document.getElementById('chevron-' + id);
+                if (c) c.classList.remove('open');
+            });
+
+            if (!isOpen) {
+                submenu.classList.add('open');
+                if (chevron) chevron.classList.add('open');
+            }
+        }
+    }
+
+    function closeFloatMenus() {
+        document.querySelectorAll('.float-submenu').forEach(m => m.classList.remove('show'));
+        activeFloatMenu = null;
+    }
+
+    function showPage(pageId, element) {
+        document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+        document.getElementById(pageId).style.display = 'block';
+
+        document.querySelectorAll('.nav-link-btn').forEach(link => link.classList.remove('active'));
+        if (element && element.classList) element.classList.add('active');
+    }
+
+    // Close float menus when clicking outside
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.nav-item')) {
+            closeFloatMenus();
+        }
+    });
+
+    // Search filter
+    document.getElementById('search').addEventListener('keyup', function () {
+        const value = this.value.toLowerCase();
+        document.querySelectorAll('#tableData tbody tr').forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(value) ? '' : 'none';
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>user registration</title>
+  </head>
+  <body>
+    <h1>FOR EXAM REGISTRATION</h1>
+    <form>
+        <h2>
+            USER REGISTRATION
+        </h2>
+        <table>
+            <tr>
+                <th>column1</th>
+                <th>column2</th>
+            </tr>
+            <tr>
+                <td><label for="username">USER NAME</label></td>
+                <td> 
+                <input type="text" name="username" id="username" placeholder="enter your name"/>
+                </td>
+            </tr>
+            <tr>
+            <td><label for="password">PASSWORD</label></td>
+                <td> 
+                <input type="password" name="password" id="password" placeholder="enter your password"/>
+                </td>
+                </tr>
+                <tr>
+            <td><label for="confirm-password">CONFIRM PASSWORD</label></td>
+                <td> 
+                <input type="password" name="password" id="confirm-password" placeholder="retype your password"/>
+                </td>
+                </tr>
+                <tr>
+            <td><address for="address">ADDRESS</label></td>
+                <td> 
+                <textarea id="address" name="address" placeholder="enter your address" rows=15></textarea>
+                </td>
+                </tr>
+                <tr>
+            <td><label for="phoneno">PHONENO</label></td>
+                <td> 
+                <input type="number" name="number" id="phonenumber" placeholder="enter your phonenumber"/>
+                </td>
+                </tr>
+                <tr>
+            <td><label for="emailid">EMAILID</label></td>
+                <td> 
+                <input type="email" name="emailid" id="emailid" placeholder="enter your emailid"/>
+                </td>
+                </tr>
+                <tr>
+            <td ><label>AGE</label></td>
+                <td>
+                <select name="age">
+                    <option value="">--select Age--</option>
+                  <option value="18">18</option>
+                    <option value="19">19</option>
+                    <option value="20">20</option>
+                </select>
+                </td>
+                </tr>
+                 <tr>
+                <td><label >GENDER</label></td>
+                <td> 
+                <input type="radio" name="gender" value="male">male
+                <input type="radio" name="gender" value="female">female
+                <input type="radio" name="gender" value="other">other
+                </td>
+            </tr>
+             <tr>
+            <td ><label>COMPANY NAME</label></td>
+                <td> 
+                <select name="companyname">
+                    <option>--select companyname--</option>
+                    <option value="TCS">TCS</option>
+                    <option value="wipro">WIPRO</option>
+                    <option value="quotus">QUOTUS</option>
+                </select>
+                </td>
+                </tr>
+                 <tr>
+                <td><label>SKILL</label></td>
+                <td> 
+                <input type="checkbox" name="skill" value="c#"/>c#
+                <input type="checkbox" name="skill" value="c++"/>c++
+                <input type="checkbox" name="skill" value="java"/>java
+                </td>
+            </tr>
+             <tr>
+            <td><label for="salary">SALARY</label></td>
+                <td> 
+                <input type="salary" name="salary" id="salary" placeholder="enter your salary"/>
+                </td>
+                </tr>
+                 <tr>
+            <td><label for="dob">DATE 0F BIRTH</label></td>
+                <td> 
+                <input type="date" name="dob" id="dob" placeholder="ENTER YOUR DATE OF BIRTH "/>
+                </td>
+                </tr>
+                 <tr>
+            <td><label for="cv">ADD YOUR CV</label></td>
+                <td> 
+                <input type="file" name="CV" id="cv" placeholder="upload your cv"/>
+                </td>
+                </tr>
+        </table>
+        <br/>
+        <button>
+            <input type="submit" value="Submit"/>
+        </button>
+        <button>
+            <input type="reset" value="Reset"/>
+        </button>
+        <button>
+            <input type="submit" value="Cancel"/>
+        </button>
+    </form>
+    <P>
+    Already Have An Account
+    <a href="login.html">LOGIN
+    </a>
+    </P>
+  </body>
+</html>

@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <title>Student Registration Form</title>
+
+  <style>
+    body {
+      background: #ddd;
+    }
+
+    .form-container {
+      background: linear-gradient(135deg, #6a5acd, #7b68ee);
+      padding: 30px;
+      border: 2px solid black;
+      color: white;
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h2 {
+      text-align: center;
+      text-decoration: underline;
+      margin-bottom: 20px;
+      color: #4b3fbf;
+    }
+
+    label {
+      font-weight: 500;
+    }
+
+    .note {
+      font-size: 12px;
+      margin-left: 10px;
+    }
+
+    textarea {
+      resize: none;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>STUDENT REGISTRATION FORM</h2>
+
+<div class="form-container">
+
+<form>
+
+  <!-- First Name -->
+  <div class="row mb-3">
+    <div class="col-md-3"><label>First Name</label></div>
+    <div class="col-md-5">
+      <input type="text" class="form-control">
+    </div>
+    <div class="col-md-4 note">(max 30 characters a-z and A-Z)</div>
+  </div>
+
+  <!-- Last Name -->
+  <div class="row mb-3">
+    <div class="col-md-3"><label>Last Name</label></div>
+    <div class="col-md-5">
+      <input type="text" class="form-control">
+    </div>
+    <div class="col-md-4 note">(max 30 characters a-z and A-Z)</div>
+  </div>
+
+  <!-- DOB -->
+  <div class="row mb-3">
+    <div class="col-md-3"><label>Date of Birth</label></div>
+    <div class="col-md-9 d-flex gap-2">
+      <select class="form-select w-auto"><option>Day</option></select>
+      <select class="form-select w-auto"><option>Month</option></select>
+      <select class="form-select w-auto"><option>Year</option></select>
+    </div>
+  </div>
+
+  <!-- Email -->
+  <div class="row mb-3">
+    <div class="col-md-3"><label>Email ID</label></div>
+    <div class="col-md-5">
+      <input type="email" class="form-control">
+    </div>
+  </div>
+
+  <!-- Mobile -->
+  <div class="row mb-3">
+    <div class="col-md-3"><label>Mobile Number</label></div>
+    <div class="col-md-5">
+      <input type="text" class="form-control">
+    </div>
+    <div class="col-md-4 note">(10 digit number)</div>
+  </div>
+
+  <!-- Gender -->
+  <div class="row mb-3">
+    <div class="col-md-3"><label>Gender</label></div>
+    <div class="col-md-9">
+      <input type="radio" name="gender"> Male
+      <input type="radio" name="gender" class="ms-3"> Female
+    </div>
+  </div>
+
+  <!-- Address -->
+  <div class="row mb-3">
+    <div class="col-md-3"><label>Address</label></div>
+    <div class="col-md-5">
+      <textarea class="form-control" rows="3"></textarea>
+    </div>
+  </div>
+
+  <!-- City -->
+  <div class="row mb-3">
+    <div class="col-md-3"><label>City</label></div>
+    <div class="col-md-5">
+      <input type="text" class="form-control">
+    </div>
+    <div class="col-md-4 note">(max 30 characters a-z and A-Z)</div>
+  </div>
+
+  <!-- Pin -->
+  <div class="row mb-3">
+    <div class="col-md-3"><label>Pin Code</label></div>
+    <div class="col-md-5">
+      <input type="text" class="form-control">
+    </div>
+    <div class="col-md-4 note">(6 digit number)</div>
+  </div>
+
+  <!-- State -->
+  <div class="row mb-3">
+    <div class="col-md-3"><label>State</label></div>
+    <div class="col-md-5">
+      <input type="text" class="form-control">
+    </div>
+  </div>
+
+  <!-- Country -->
+  <div class="row mb-3">
+    <div class="col-md-3"><label>Country</label></div>
+    <div class="col-md-5">
+      <input type="text" class="form-control" value="India">
+    </div>
+  </div>
+
+  <!-- Hobbies -->
+  <div class="row mb-3">
+    <div class="col-md-3"><label>Hobbies</label></div>
+    <div class="col-md-9">
+      <input type="checkbox"> Drawing
+      <input type="checkbox" class="ms-2"> Singing
+      <input type="checkbox" class="ms-2"> Dancing
+      <input type="checkbox" class="ms-2"> Sketching
+      <br>
+      Others <input type="checkbox"> 
+      <input type="text" class="form-control d-inline w-auto">
+    </div>
+  </div>
+
+  <!-- Qualification Table -->
+  <div class="mb-3">
+    <label>Qualification</label>
+    <table class="table table-bordered text-white mt-2">
+      <tr>
+        <th>Sl.No</th>
+        <th>Examination</th>
+        <th>Board</th>
+        <th>Percentage</th>
+        <th>Year</th>
+      </tr>
+      <tr>
+        <td>1</td><td>Class X</td>
+        <td><input class="form-control"></td>
+        <td><input class="form-control"></td>
+        <td><input class="form-control"></td>
+      </tr>
+      <tr>
+        <td>2</td><td>Class XII</td>
+        <td><input class="form-control"></td>
+        <td><input class="form-control"></td>
+        <td><input class="form-control"></td>
+      </tr>
+      <tr>
+        <td>3</td><td>Graduation</td>
+        <td><input class="form-control"></td>
+        <td><input class="form-control"></td>
+        <td><input class="form-control"></td>
+      </tr>
+      <tr>
+        <td>4</td><td>Masters</td>
+        <td><input class="form-control"></td>
+        <td><input class="form-control"></td>
+        <td><input class="form-control"></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Courses -->
+  <div class="row mb-3">
+    <div class="col-md-3"><label>Courses Applied For</label></div>
+    <div class="col-md-9">
+      <input type="radio" name="course"> BCA
+      <input type="radio" name="course" class="ms-2"> B.Com
+      <input type="radio" name="course" class="ms-2"> B.Sc
+      <input type="radio" name="course" class="ms-2"> B.A
+    </div>
+  </div>
+
+  <!-- Buttons -->
+  <div class="text-center">
+    <button class="btn btn-light">Submit</button>
+    <button class="btn btn-secondary">Reset</button>
+  </div>
+
+</form>
+
+</div>
+
+</body>
+</html>
